@@ -1,0 +1,2 @@
+# Example (not complete) PyInstaller spec hints for later packaging.
+# pyinstaller --onefile --name ASOChat main.py

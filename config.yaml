@@ -1,0 +1,9 @@
+data_dir: "./data"            # change to your corpus path
+index_dir: "faiss_index"
+embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+k: 3
+model:
+  provider: "google"           # "google" | "openai" | "mock"
+  name: "gemini-2.0-flash"
+logging:
+  level: "INFO"
