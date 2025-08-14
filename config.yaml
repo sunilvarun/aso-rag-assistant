@@ -1,9 +1,27 @@
-data_dir: "./data"            # change to your corpus path
+data_dir: "/Users/sunilvarun/Documents/Python/my_corpus"
 index_dir: "faiss_index"
+
+#retrieval
 embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
-k: 3
+k: 3                       # default top-k
+min_score: 0.0             # optional: ignore very weak hits
+adaptive_topk: false       # turn on to grow k if results are weak
+adaptive_max_k: 6          # cap for adaptive mode
+
+#chunking
+chunk_size: 500
+chunk_overlap: 50
+
+# indexing mode
+reindex_on_start: false    # always rebuild on app start (beta: false)
+incremental_index: true    # rebuild only changed files (timestamp based)
+manifest_path: ".index_manifest.json"
+
 model:
   provider: "google"           # "google" | "openai" | "mock"
   name: "gemini-2.0-flash"
+ 
+#logging
 logging:
   level: "INFO"
+  

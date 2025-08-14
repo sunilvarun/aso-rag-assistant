@@ -1,5 +1,12 @@
-from typing import List, Dict, Any
+from typing import List, Dict
 from modules.model_client import ask_llm
+import os
+
+def os_path_tail(path: str) -> str:
+    try:
+        return os.path.basename(path)
+    except Exception:
+        return path
 
 class ChatEngine:
     def __init__(self, cfg, retriever):
@@ -9,7 +16,7 @@ class ChatEngine:
 
     def _format_history(self) -> str:
         buf = []
-        for turn in self.history[-6:]:  # keep last 6 turns for prompt brevity
+        for turn in self.history[-6:]:
             role = turn.get("role", "user")
             content = turn.get("content", "")
             if "📂 **Sources:**" in content:
@@ -18,34 +25,38 @@ class ChatEngine:
         return "\n".join(buf)
 
     def chat(self, message: str) -> str:
-        # Retrieve context
         results = self.retriever.search(message)
-        context = "\n\n".join([doc.page_content for doc in results])
 
-        # Build sources text
+        # Build a clean, separated context for the LLM
+        parts = []
+        for d in results:
+            src = os_path_tail(d.metadata.get("source", "Unknown"))
+            page = d.metadata.get("page") or d.metadata.get("page_number")
+            header = f"[Source: {src}" + (f", page {page}]" if page not in (None, "", 0) else "]")
+            parts.append(f"{header}\n{d.page_content}")
+        context = "\n\n---\n\n".join(parts) if parts else ""
+
+        # Sources list for the UI
         def src_line(d):
-            src = d.metadata.get("source", "Unknown")
-            page = d.metadata.get("page", d.metadata.get("page_number", ""))
-            if page not in ("", None):
-                return f"{src} (page {page})"
-            return src
+            src = os_path_tail(d.metadata.get("source", "Unknown"))
+            page = d.metadata.get("page") or d.metadata.get("page_number")
+            return f"{src} (page {page})" if page not in ("", None, 0) else src
         sources = sorted(set(src_line(d) for d in results))
         sources_text = "\n".join(f"- {s}" for s in sources) if sources else "- (no matched documents)"
 
         history_text = self._format_history()
-
-        prompt = f"""You are a grounded assistant. Use ONLY the context to answer. If the answer is not present in the context, say you don't know.
+        prompt = f"""You are a grounded assistant. Use ONLY the provided context. If the answer is not present in the context, say you don't know.
 
 Conversation so far:
 {history_text}
 
-Context (from retrieved documents):
+Context:
 {context}
 
 Latest question:
 {message}
 
-Answer (concise, cite specific facts from the context when possible):
+Answer (concise, cite facts from the context when possible):
 """
 
         reply = ask_llm(
@@ -53,11 +64,8 @@ Answer (concise, cite specific facts from the context when possible):
             model_name=self.cfg["model"]["name"],
             prompt=prompt
         )
+        final = f"{reply}\n\n📂 **Sources:**\n{sources_text}"
 
-        final_answer = f"{reply}\n\n📂 **Sources:**\n{sources_text}"
-
-        # Update history
         self.history.append({"role": "user", "content": message})
-        self.history.append({"role": "assistant", "content": final_answer})
-
-        return final_answer
+        self.history.append({"role": "assistant", "content": final})
+        return final
