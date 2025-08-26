@@ -162,11 +162,4 @@ git push -u origin main
                    └───────────────┘
 ```
 
----
 
-```
-
-✅ That’s one **clean Markdown file** you can drop straight into GitHub as `README.md`.  
-
-Do you want me to also add a **screenshot of the Gradio UI** example section (as an embedded image tag), so your repo looks more “visual” when someone visits it?
-```
