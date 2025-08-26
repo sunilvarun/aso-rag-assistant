@@ -1,27 +1,35 @@
 data_dir: "/Users/sunilvarun/Documents/Python/my_corpus"
 index_dir: "faiss_index"
 
-#retrieval
+# retrieval
 embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
-k: 3                       # default top-k
-min_score: 0.0             # optional: ignore very weak hits
-adaptive_topk: false       # turn on to grow k if results are weak
-adaptive_max_k: 6          # cap for adaptive mode
+k: 3
+min_score: 0.0
+adaptive_topk: false
+adaptive_max_k: 6
 
-#chunking
+# chunking
 chunk_size: 500
 chunk_overlap: 50
 
 # indexing mode
-reindex_on_start: false    # always rebuild on app start (beta: false)
-incremental_index: true    # rebuild only changed files (timestamp based)
+reindex_on_start: false
+incremental_index: true
 manifest_path: ".index_manifest.json"
 
 model:
   provider: "google"           # "google" | "openai" | "mock"
   name: "gemini-2.0-flash"
- 
-#logging
+
+# logging
 logging:
   level: "INFO"
-  
+
+# visual parsing / color legend
+status_colors:
+  red:   ["#ff0000", "#e74c3c"]
+  amber: ["#f1c40f", "#ffbf00"]
+  green: ["#2ecc71", "#00a650"]
+
+# structured DB (used by indexer + chat engine)
+structured_db_path: ".structured.sqlite"
